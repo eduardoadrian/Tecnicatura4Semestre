@@ -2,6 +2,7 @@ const modalContainer = document.getElementById("modal-container");
 const modalOverlay = document.getElementById("modal-overlay");
 
 const cartBtn = document.getElementById("cart-btn");
+const cartCounter = document.getElementById("cart-counter");
 
 const displayCart = () => {
     modalContainer.innerHTML = "";
@@ -29,6 +30,7 @@ const displayCart = () => {
     modalContainer.append(modalHeader);
 
     //modal body
+    if (cart.length > 0){
     cart.forEach((product) => {
         const modalBody = document.createElement("div");
         modalBody.className = "modal-body"
@@ -82,6 +84,12 @@ const displayCart = () => {
     
     `;
     modalContainer.append(modalFooter);
+  }else{
+    const modalText = document.createElement("h2");
+    modalText.className = "modal-body";
+    modalText.innerText = "your cart is empty";
+    modalContainer.append(modalText);
+  }    
 };
 
 
@@ -91,7 +99,20 @@ const deleteCartProduct =(id)=> {
     const foundId = cart.findIndex((elemento)=> elemento.id ===id)
     cart.splice(foundId, 1)
     displayCart();
+    displayCartCounter();
 };
+
+const displayCartCounter =() => {
+    const cartLength = cart.reduce((acc, el) => acc + el.quanty, 0);
+    if(cartLength > 0){
+      cartCounter.style.dysplay = "block";
+      cartCounter.innerText = cartLength;
+    }else{
+        cartCounter.style.display = "none";
+    }
+};
+
+    
 
 
 
