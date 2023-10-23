@@ -1,7 +1,7 @@
 const shopContent = document.getElementById("shopContent");
 const cart = [];//Este es nuestro carrito, un array vacio
 
-productos.forEach((product) =>{
+productos.forEach((product) => {
     const content = document.createElement("div");
     content.className = "card";
     content.innerHTML = `
@@ -21,21 +21,22 @@ productos.forEach((product) =>{
     buyButton.addEventListener("click", () => {
         const repeat = cart.some((repeatProduct) => repeatProduct.id === product.id);
 
-        if(repeat) {
-            cart.map((prod)=> {
-                if(prod.id === product.id) {
-                    prod.quanty++;
-                }
-            });
-        }else {
-            cart.push({ //cargamos en el carrito
-                id: product.id,
-                productName: product.productName,
-                price: product.price,
-                quanty: product.quanty,
-                img: product.img,
-            });
+        if (repeat) {
+          cart.map((prod)=> {
+            if (prod.id === product.id) {
+              prod.quanty++;
+              displayCartCounter();
+            }
+          });
+        } else {
+          cart.push({ //cargamos en el carrito
+            id: product.id,
+            productName: product.productName,
+            price: product.price,
+            quanty: product.quanty,
+            img: product.img,
+          });
+          displayCartCounter();
         }
-
     });
 });

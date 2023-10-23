@@ -1,3 +1,5 @@
+const { isAnyArrayBuffer } = require("util/types");
+
 const modalContainer = document.getElementById("modal-container");
 const modalOverlay = document.getElementById("modal-overlay");
 
@@ -12,14 +14,14 @@ const displayCart = () => {
     //modal header
     const modalHeader = document.createElement("div");
 
-    const modalClose = document.createElemento("div")
-    modalClose.innerTEXT = "❌"
+    const modalClose = document.createElemento("div");
+    modalClose.innerText = "❌";
     modalClose.className = "modal-close";
     modalHeader.append(modalClose);
 
     modalClose.addEventListener("click", () => {
-        modalContainer.style.display = "none";
-        modalOverlay.style.display = "none";
+      modalContainer.style.display = "none";
+      modalOverlay.style.display = "none";
     });
     
     const modalTitle = document.createElement("div");
@@ -31,9 +33,9 @@ const displayCart = () => {
 
     //modal body
     if (cart.length > 0){
-    cart.forEach((product) => {
+    cart.forEach((product)=> {
         const modalBody = document.createElement("div");
-        modalBody.className = "modal-body"
+        modalBody.className = "modal-body";
         modalBody.innerHTML = `
         <div class="product">
             <img class="product-img" src="${product.img}" />
@@ -48,68 +50,129 @@ const displayCart = () => {
             <div class="price">${product.price * product.quanty} $</div>
             <div class="delete-product">❌</div> 
         </div>           
-          `;
+        `;
         modalContainer.append(modalBody);
 
-        const decrese = modalBody.querySelector(".quantity-btn-decrese")
+        const decrese = modalBody.querySelector(".quantity-btn-decrese");
         decrese.addEventListener("click", () => {
             if (product.quanty !== 1) {
                 product.quanty--;
                 displayCart();   
             }
+            displayCartCounter();
         });
 
         const increse = modalBody.querySelector(".quantity-btn-increse");
         increse.addEventListener("click", () => {
             product.quanty++;
             displayCart();
+            displayCartCounter();
         });
 
         //delete
         const deleteProduct = modalBody.querySelector(".delete-product");
 
-        deleteProduct.addEventListener("click", ()=> {
-          deleteCartProduct(product.id)  
-        })
-
+        deleteProduct.addEventListener("click", () => {
+          deleteCartProduct(product.id);  
+        });
     });
 
     //modal footer
     const total = cart.reduce((acc, el) => acc + el.price * el.quanty, 0);
  
     const modalFooter = document.createElement("div");
-    modalFooter.className = "modal-footer"
+    modalFooter.className = "modal-footer";
     modalFooter.innerHTML = `
-    <div class="total-price">Total: ${Total}</div>
-    
-    `;
+      <div class="total-price">Total: ${total}</div>
+      <button class="btn-primary" id="checkout-btn"> go to chackout</button>   
+      <div id="button-checkout"></div>
+      `;
     modalContainer.append(modalFooter);
-  }else{
+    // mp;
+    const mercadopago = new MercadoPago(" public-key", {//" TEST-970e4000-4f64-42dc.....", {  //"public-key"
+      locale: "es-AR", // The most common are: 'pt-BR', 'es-AR' and 'en-US'
+    });
+
+    const checkoutButton = modalFooter.querySelector("#checkout-btn");
+
+    checkoutButton.addEventListener("click", function () {
+
+      checkoutButton.remove();
+      
+
+      const orderData = {
+        quantity: 1,
+        description: "compra de ecommerce",
+        price: total,
+      };
+
+      fetch("http://localhost:8080/create_preference", {
+        mothod: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      })
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (preference) {
+          createCheckoutButton(preference.id);
+        })
+        .catch(function () {
+          alert("Unexpected eror");
+        });
+    });
+    
+    function createCheckoutButton(preferenceId) {
+      // Initialize the checkout
+      const bricksBuilder = mercadopago.bricks();
+
+      const renderComponent = async (bricksBuilder) => {
+       //if (window.checkoutButton) checkoutButton.unmoubt();
+
+       await bricksBuilder.create(
+        "wallet",
+        "button-checkout", // class/id where the payment button will be displayed
+        {
+          initialization: {
+            preferenceId: preferenceId,
+          },
+          callbacks: {
+           onError: (error) => console.error(error),
+           onReady: () => {},
+          },
+       }
+     };
+    };
+    window.checkoutButton = renderComponent(bricksBuilder);
+ 
+  } else{
     const modalText = document.createElement("h2");
     modalText.className = "modal-body";
     modalText.innerText = "your cart is empty";
     modalContainer.append(modalText);
-  }    
+  }   
 };
 
 
-cartBtn.addEventListener("click, displayCart");
+cartBtn.addEventListener("click", displayCart);
 
-const deleteCartProduct =(id)=> {
-    const foundId = cart.findIndex((elemento)=> elemento.id ===id)
-    cart.splice(foundId, 1)
-    displayCart();
-    displayCartCounter();
+const deleteCartProduct = (id) => {
+  const foundId = cart.findIndex((element)=> element.id === id);
+  cart.splice(foundId, 1);
+  displayCart();
+  displayCartCounter();
 };
 
 const displayCartCounter =() => {
-    const cartLength = cart.reduce((acc, el) => acc + el.quanty, 0);
-    if(cartLength > 0){
-      cartCounter.style.dysplay = "block";
-      cartCounter.innerText = cartLength;
-    }else{
-        cartCounter.style.display = "none";
-    }
+  const cartLength = cart.reduce((acc, el) => acc + el.quanty, 0);
+  if(cartLength > 0) {
+    cartCounter.style.dysplay = "block";
+    cartCounter.innerText = cartLength;
+  } else{
+    cartCounter.style.display = "none";
+  }
 };
 
     
